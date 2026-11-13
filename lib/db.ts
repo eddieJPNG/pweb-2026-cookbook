@@ -135,7 +135,7 @@ function createConnection(): Databaseconn {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 
   const db = new Database(DB_FILE);
-  db.pragma("journal_mode = WAL");
+  db.pragma("journal_mode = DELETE");
   db.pragma("foreign_keys = ON");
   db.exec(CREATE_TABLE_SQL);
 
@@ -149,4 +149,57 @@ function getDb(): Databaseconn {
     globalStore.cookbookDb = createConnection();
   }
   return globalStore.cookbookDb;
+}
+
+/** HELPERS DE CONSULTA (prepared statements, sem concatenação de SQL) */
+
+export function listCookbookEntries(): CookbookEntry[] {
+  return getDb().prepare<[], CookbookEntry>(LIST_SQL).all();
+}
+
+export function findCookbookById(id: number): CookbookEntry | undefined {
+  return getDb().prepare<[number], CookbookEntry>(FIND_BY_ID_SQL).get(id);
+}
+
+export function findCookbookByMealId(mealId: string): CookbookEntry | undefined {
+  return getDb().prepare<[string], CookbookEntry>(FIND_BY_MEAL_ID_SQL).get(mealId);
+}
+
+/** `created_at` é preenchido automaticamente aqui (backend) */
+export function insertCookbookEntry(entry: NewCookbookEntry): CookbookEntry {
+  const row: NewCookbookEntryRow = {
+    ...entry,
+    created_at: new Date().toISOString(),
+  };
+
+  const inserted = getDb()
+    .prepare<NewCookbookEntryRow, CookbookEntry>(INSERT_SQL)
+    .get(row);
+
+  if (!inserted) {
+    throw new Error("Falha ao inserir a receita no caderno.");
+  }
+  return inserted;
+}
+
+/** Atualiza apenas `rating` e `note`; campos ausentes mantêm o valor atual */
+export function updateCookbookEntry(
+  id: number,
+  patch: CookbookPatch,
+): CookbookEntry | undefined {
+  const current = findCookbookById(id);
+  if (!current) return undefined; // id inexistente → 404
+
+  const rating = patch.rating ?? current.rating;
+  const note = patch.note === undefined ? current.note : patch.note;
+
+  return getDb()
+    .prepare<[number, string | null, number], CookbookEntry>(UPDATE_SQL)
+    .get(rating, note, id);
+}
+
+/** Retorna `true` se alguma linha foi removida */
+export function deleteCookbookEntry(id: number): boolean {
+  const result = getDb().prepare<[number], unknown>(DELETE_SQL).run(id);
+  return result.changes > 0;
 }
