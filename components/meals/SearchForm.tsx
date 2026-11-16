@@ -31,6 +31,7 @@ export default function SearchForm() {
   const [loadingSearch, setLoadingSearch] = useState(false);
 
   const [error, setError] = useState("");
+  const [filterError, setFilterError] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
 
   // Carrega as opções dos filtros quando o componente é montado.
@@ -40,7 +41,7 @@ export default function SearchForm() {
         const data = await getFilters();
         setFilters(data);
       } catch {
-        setError("Não foi possível carregar os filtros.");
+        setFilterError("Não foi possível carregar as categorias e culinárias.");
       } finally {
         setLoadingFilters(false);
       }
@@ -195,7 +196,9 @@ console.log("Resultados enviados para o estado:", results.length);
                 <option value="">
                   {loadingFilters
                     ? "Carregando opções..."
-                    : "Selecione uma opção"}
+                    : filterOptions.length === 0
+                       ? "Nenhuma opção disponível"
+                      : "Selecione uma opção"}
                 </option>
 
                 {filterOptions.map((option) => (
@@ -216,6 +219,15 @@ console.log("Resultados enviados para o estado:", results.length);
           </button>
 
         </form>
+        
+        {filterError && (
+          <p
+            role="alert"
+            className="mt-5 rounded-xl bg-red-50 p-4 text-sm text-red-700"
+          >
+            {filterError}
+          </p>
+        )}
 
         {error && (
           <p
