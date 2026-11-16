@@ -1,4 +1,4 @@
-
+import SearchForm from "@/components/meals/SearchForm";
 import Link from "next/link";
 
 const categories = [
@@ -54,6 +54,9 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Pesquisa de receitas */}
+      <SearchForm />
+      
       {/* Apresentação das categorias */}
       <section
         id="categorias"
