@@ -1,6 +1,7 @@
 
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import {
@@ -250,29 +251,33 @@ console.log("Resultados enviados para o estado:", results.length);
               Resultados encontrados: {meals.length}
             </h3>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">             
               {meals.map((meal) => (
-                <article
+                <Link
                   key={meal.id}
-                  className="overflow-hidden rounded-xl border border-border bg-background"
+                  href={`/meals/${meal.id}`}
+                  className="block"
                 >
-                  <img
-                    src={meal.image_url}
-                    alt={meal.name}
-                    className="h-48 w-full object-cover"
-                  />
+                  <article className="h-full overflow-hidden rounded-xl border border-border bg-background transition-all hover:-translate-y-1 hover:shadow-md">
+                    <img
+                      src={meal.image_url}
+                      alt={meal.name}
+                      className="h-48 w-full object-cover"
+                    />
 
-                  <div className="p-4">
-                    <h4 className="font-bold">{meal.name}</h4>
+                    <div className="p-4">
+                      <h4 className="font-bold">{meal.name}</h4>
 
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {meal.category ?? "Categoria não informada"}
-                      {" · "}
-                      {meal.area ?? "Culinária não informada"}
-                    </p>
-                  </div>
-                </article>
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        {meal.category ?? "Categoria não informada"}
+                        {" · "}
+                        {meal.area ?? "Culinária não informada"}
+                      </p>
+                    </div>
+                  </article>
+                </Link>
               ))}
+
             </div>
           </div>
         )}  
